@@ -1,0 +1,159 @@
+-- ==========================================
+-- Script Name: FIFAYd_6 (Mobile Fly Fixed)
+-- Key: KOPM56
+-- Key Server: https://discord.gg/CZ4x8JAVC
+-- ==========================================
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "FIFAYd_6",
+   LoadingTitle = "FIFAYd_6 Hub",
+   LoadingSubtitle = "Mobile Supported",
+   ConfigurationSaving = { Enabled = false },
+   Discord = { Enabled = true, Invite = "CZ4x8JAVC", RememberJoins = true },
+   KeySystem = true,
+   KeySettings = {
+      Title = "FIFAYd_6 | Key Verification",
+      Subtitle = "เข้า Discord เพื่อรับคีย์ใช้งาน",
+      Note = "รับคีย์ได้ที่: https://discord.gg/CZ4x8JAVC",
+      FileName = "FIFAYd6_KeySave",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"KOPM56"}
+   }
+})
+
+local MainTab = Window:CreateTab("Main Features", 4483362458)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local SpeedValue = 16
+local SpeedEnabled = false
+local InfJumpEnabled = false
+
+local Flying = false
+local FlySpeed = 50
+local FlyConnection
+
+-- 1. วิ่งเร็ว (WalkSpeed 1-300)
+MainTab:CreateToggle({
+   Name = "เปิดใช้งาน วิ่งเร็ว (Speed)",
+   CurrentValue = false,
+   Callback = function(Value)
+      SpeedEnabled = Value
+      if not Value and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+         LocalPlayer.Character.Humanoid.WalkSpeed = 16
+      end
+   end,
+})
+
+MainTab:CreateSlider({
+   Name = "ปรับความเร็วเดิน (1-300)",
+   Range = {1, 300},
+   Increment = 1,
+   Suffix = " Speed",
+   CurrentValue = 16,
+   Callback = function(Value)
+      SpeedValue = Value
+   end,
+})
+
+RunService.Stepped:Connect(function()
+   if SpeedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+      LocalPlayer.Character.Humanoid.WalkSpeed = SpeedValue
+   end
+end)
+
+-- 2. กระโดดไม่จำกัด (Infinite Jump)
+MainTab:CreateToggle({
+   Name = "กระโดดไม่จำกัด (Infinite Jump)",
+   CurrentValue = false,
+   Callback = function(Value)
+      InfJumpEnabled = Value
+   end,
+})
+
+UserInputService.JumpRequest:Connect(function()
+   if InfJumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+      LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+   end
+end)
+
+-- 3. ระบบบิน (Mobile Friendly Fly)
+local function StartFly()
+   local char = LocalPlayer.Character
+   if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+   local hrp = char.HumanoidRootPart
+   local hum = char:FindFirstChildOfClass("Humanoid")
+
+   if hum then hum.PlatformStand = true end -- ปิดอนิเมชันตัวละครตก
+
+   FlyConnection = RunService.RenderStepped:Connect(function(delta)
+      if not Flying or not char or not hrp then return end
+      
+      local moveVector = Vector3.zero
+      if hum then
+         -- ดึงค่าการเคลื่อนที่จาก Joystick มือถือ
+         moveVector = hum.MoveDirection
+      end
+
+      if moveVector.Magnitude > 0 then
+         -- บินไปตามทิศทางที่กด Joystick + ทิศทางของกล้อง
+         local flyDir = (Camera.CFrame.LookVector * moveVector.Z * -1) + (Camera.CFrame.RightVector * moveVector.X)
+         hrp.CFrame = hrp.CFrame + (flyDir * (FlySpeed * delta * 2))
+      end
+      
+      hrp.Velocity = Vector3.zero
+   end)
+end
+
+local function StopFly()
+   if FlyConnection then FlyConnection:Disconnect() end
+   local char = LocalPlayer.Character
+   if char and char:FindFirstChildOfClass("Humanoid") then
+      char:FindFirstChildOfClass("Humanoid").PlatformStand = false
+   end
+end
+
+MainTab:CreateToggle({
+   Name = "เปิดใช้งาน ระบบบิน (Fly)",
+   CurrentValue = false,
+   Callback = function(Value)
+      Flying = Value
+      if Flying then
+         StartFly()
+      else
+         StopFly()
+      end
+   end,
+})
+
+MainTab:CreateSlider({
+   Name = "ปรับความเร็วบิน (1-100)",
+   Range = {1, 100},
+   Increment = 1,
+   Suffix = " Fly Speed",
+   CurrentValue = 50,
+   Callback = function(Value)
+      FlySpeed = Value
+   end,
+})
+
+LocalPlayer.CharacterAdded:Connect(function()
+   if Flying then
+      Flying = false
+      StopFly()
+   end
+end)
+
+Rayfield:Notify({
+   Title = "FIFAYd_6 Loaded",
+   Content = "อัปเดตรองรับมือถือเรียบร้อยแล้ว!",
+   Duration = 5,
+   Image = 4483362458,
+})
