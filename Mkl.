@@ -1,0 +1,98 @@
+-- ==========================================
+-- Script Name: FIFAYd_6 (Fly Update)
+-- Key: KOPM56
+-- Key Server: https://discord.gg/CZ4x8JAVC
+-- Features: WalkSpeed, Infinite Jump, Fly (Speed 1-100)
+-- ==========================================
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "FIFAYd_6",
+   LoadingTitle = "FIFAYd_6 Hub",
+   LoadingSubtitle = "Key System Protected",
+   ConfigurationSaving = {
+      Enabled = false,
+   },
+   Discord = {
+      Enabled = true,
+      Invite = "CZ4x8JAVC",
+      RememberJoins = true
+   },
+   KeySystem = true,
+   KeySettings = {
+      Title = "FIFAYd_6 | Key Verification",
+      Subtitle = "เข้า Discord เพื่อรับคีย์ใช้งาน",
+      Note = "รับคีย์ได้ที่: https://discord.gg/CZ4x8JAVC",
+      FileName = "FIFAYd6_KeySave",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"KOPM56"}
+   }
+})
+
+local MainTab = Window:CreateTab("Main Features", 4483362458)
+
+-- Variables
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local SpeedValue = 16
+local SpeedEnabled = false
+local InfJumpEnabled = false
+
+local Flying = false
+local FlySpeed = 50
+local BodyVelocity, BodyGyro
+
+-- 1. วิ่งเร็ว (WalkSpeed 1-300)
+MainTab:CreateToggle({
+   Name = "เปิดใช้งาน วิ่งเร็ว (Speed)",
+   CurrentValue = false,
+   Callback = function(Value)
+      SpeedEnabled = Value
+      if not Value and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+         LocalPlayer.Character.Humanoid.WalkSpeed = 16
+      end
+   end,
+})
+
+MainTab:CreateSlider({
+   Name = "ปรับความเร็วเดิน (1-300)",
+   Range = {1, 300},
+   Increment = 1,
+   Suffix = " Speed",
+   CurrentValue = 16,
+   Callback = function(Value)
+      SpeedValue = Value
+      if SpeedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+         LocalPlayer.Character.Humanoid.WalkSpeed = SpeedValue
+      end
+   end,
+})
+
+RunService.Stepped:Connect(function()
+   if SpeedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+      LocalPlayer.Character.Humanoid.WalkSpeed = SpeedValue
+   end
+end)
+
+-- 2. กระโดดไม่จำกัด (Infinite Jump)
+MainTab:CreateToggle({
+   Name = "กระโดดไม่จำกัด (Infinite Jump)",
+   CurrentValue = false,
+   Callback = function(Value)
+      InfJumpEnabled = Value
+   end,
+})
+
+UserInputService.JumpRequest:Connect(function()
+   if InfJumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+      LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+   end
+end)
+
+-- 3
